@@ -70,7 +70,9 @@ Module.register('MMM-BackgroundSlideshow', {
   },
 
     getScripts: function() {
-		return ["modules/" + this.name + "/node_modules/exif-js/exif.js"];
+		return [
+// "modules/" + this.name + "/node_modules/exif-js/exif.js"
+];
 	},
 
 
@@ -124,6 +126,8 @@ Module.register('MMM-BackgroundSlideshow', {
           this.resume();
         }
       }
+    } else if (notification === 'BACKGROUNDSLIDESHOW_IMAGE') {
+      this._updateImage(payload.imageData);
     }
   },
   // Override dom generator.
@@ -170,22 +174,29 @@ Module.register('MMM-BackgroundSlideshow', {
     return div;
   },
 
-  updateImage: function() {
-    if (this.imageList && this.imageList.length) {
-      if (this.imageIndex < this.imageList.length) {
+  _updateImage: function(imageData) {
+
         if (this.config.transitionImages) {
           this.swapDivs();
         }
         var div1 = this.div1;
         var div2 = this.div2;
 
+        if (div1.src) {
+		window.URL.revokeObjectURL(div1.src);
+        }
+	div1.src = window.URL.createObjectURL(new Blob([imageData]));
+        div1.style.backgroundImage = "url('" + div1.src + "')"
+        div1.style.opacity = '1';
+        div2.style.opacity = '0';
 
+/*
         var image = new Image();
         image.onload = function() {
 			div1.style.backgroundImage = "url('" + this.src + "')";
 			div1.style.opacity = '1';
-			div1.style.transform="rotate(0deg)";			  
-			EXIF.getData(image, function() {	
+			div1.style.transform="rotate(0deg)";
+			EXIF.getData(image, function() {
 				var Orientation = EXIF.getTag(this, "Orientation");
 				if (Orientation != null) {
 					// console.info('Updating image, orientation:' + Orientation);
@@ -201,12 +212,19 @@ Module.register('MMM-BackgroundSlideshow', {
 					}
 				}
 			)
- 		  
+
           div2.style.opacity = '0';
         };
-        image.src = encodeURI(this.imageList[this.imageIndex]);
+        image.src = 'data:image/jpeg,base64;' + btoa(imageData);
         this.sendNotification('BACKGROUNDSLIDESHOW_IMAGE_UPDATED', {url:image.src});
 		    // console.info('Updating image, source:' + image.src);
+*/
+  },
+
+  updateImage: function() {
+    if (this.imageList && this.imageList.length) {
+      if (this.imageIndex < this.imageList.length) {
+        this.sendSocketNotification('BACKGROUNDSLIDESHOW_GET_IMAGE', {imagePath: this.imageList[this.imageIndex]});
         this.imageIndex += 1;
       } else {
         this.imageIndex = 0;

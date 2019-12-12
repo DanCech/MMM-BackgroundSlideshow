@@ -15,6 +15,7 @@
 // call in the required classes
 var NodeHelper = require('node_helper');
 var FileSystemImageSlideshow = require('fs');
+var sharp = require('sharp');
 
 // the main module helper create
 module.exports = NodeHelper.create({
@@ -95,6 +96,13 @@ module.exports = NodeHelper.create({
       }
     }
   },
+  getImage: function(imagePath) {
+    console.log('loading image ' + imagePath);
+    return sharp(imagePath)
+      .rotate()
+      .resize(800,600,{fit:'inside'})
+      .toBuffer()
+  },
   // subclass socketNotificationReceived, received notification from module
   socketNotificationReceived: function(notification, payload) {
     if (notification === 'BACKGROUNDSLIDESHOW_REGISTER_CONFIG') {
@@ -113,6 +121,14 @@ module.exports = NodeHelper.create({
         'BACKGROUNDSLIDESHOW_FILELIST',
         returnPayload
       );
+    } else if (notification === 'BACKGROUNDSLIDESHOW_GET_IMAGE') {
+      var self = this;
+      this.getImage(payload.imagePath).then(function(imageData) {
+          self.sendSocketNotification(
+              'BACKGROUNDSLIDESHOW_IMAGE',
+              {imageData: imageData}
+          );
+      });
     }
   }
 });
