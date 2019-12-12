@@ -109,11 +109,12 @@ Module.register('MMM-BackgroundSlideshow', {
   },
   // the socket handler
   socketNotificationReceived: function(notification, payload) {
+    console.log(notification, payload);
     // if an update was received
     if (notification === 'BACKGROUNDSLIDESHOW_FILELIST') {
       // check this is for this module based on the woeid
       if (payload.identifier === this.identifier) {
-        // console.info('Returning Images, payload:' + JSON.stringify(payload));
+        console.info('Returning Images, payload:' + JSON.stringify(payload));
         // set the image list
         this.imageList = payload.imageList;
         // if image list actually contains images

@@ -68,6 +68,18 @@ module.exports = NodeHelper.create({
   },
 
   getFiles(path, imageList, config) {
+    console.log('Getting files for ' + path);
+    if (FileSystemImageSlideshow.existsSync(path + '/index.txt')) {
+      var index = this.shuffleArray(FileSystemImageSlideshow.readFileSync(path + '/index.txt', 'utf8').split("\n"));
+      for (let i = 0; i < index.length && i < 100; i++) {
+          var currentItem = path + '/' + index[i];
+          // console.log('Adding ' + currentItem);
+          imageList.push(currentItem);
+      }
+      // console.log('Got files');
+      return;
+    }
+
     var contents = FileSystemImageSlideshow.readdirSync(path);
     for (let i = 0; i < contents.length; i++) {
       var currentItem = path + '/' + contents[i];
@@ -95,6 +107,7 @@ module.exports = NodeHelper.create({
         identifier: payload.identifier,
         imageList: imageList
       };
+      // console.log(returnPayload);
       // send the image list back
       self.sendSocketNotification(
         'BACKGROUNDSLIDESHOW_FILELIST',
